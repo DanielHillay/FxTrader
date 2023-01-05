@@ -18,6 +18,7 @@ public class TradeChanges extends Auditable<String> {
     private Long changeId;
     private double stopLossChange;
     private Long tradeId;
+    private Long tradeRequestId;
     private int changeNumber;
     private LocalDateTime changeDate;
     private double lotSizeChange;

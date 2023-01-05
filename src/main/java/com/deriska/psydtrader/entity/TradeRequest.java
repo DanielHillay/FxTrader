@@ -21,12 +21,15 @@ public class TradeRequest extends Auditable<String>{
     private double stopLostPips;
     private double lotSize;
     private double takeProfitPips;
+    private double riskAccountSizeInPercent;
+    private double profitAccountSizeInPercent;
     private String currency;
     private String assetCategory;
+    private boolean calculateForMe;
     private Long tradingPlanId;
     private String tradingPlanName;
-    @Transient
-    private List<Analysis> requestAnalysis;
+//    @Transient
+//    private List<Analysis> requestAnalysis;
     private String asset;
     private double accountBalance;
     private double exchangeRate;

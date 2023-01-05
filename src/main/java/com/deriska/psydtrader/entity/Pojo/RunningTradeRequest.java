@@ -21,7 +21,9 @@ public class RunningTradeRequest {
     private double lotSize;
     private LocalDateTime entryDate;
     private LocalDateTime exitDate;
+    private double exitPrice;
     private String asset;
     private boolean isInProfit;
     private double accountBalance;
+    private boolean endedInProfit;
 }

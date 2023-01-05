@@ -24,7 +24,7 @@ public class ExitStrategy {
     private double lotSizePercentWhenTradeInLoss;
     private double allowedLossLevelPercentage;
     private double lotSizePercentWhenTradeInProfit;
-    private double slAfterProfitPercent;
+    private double sLPlacementPercentAfterProfit;
     private double inTradeProfitLevel;
     private double stopLossPercentAfterTradeInProfit;
 }

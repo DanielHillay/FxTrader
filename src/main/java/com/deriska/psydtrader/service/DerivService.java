@@ -52,9 +52,8 @@ public class DerivService {
                 TradingPlan tradingPlan = tradingPlanRepo.findByTradeId(tradeId).get();
                 ExitStrategy exitStrategy = exitStrategyRepo.findByTradingPlanIdAndCount(tradingPlan.getPlanId(), count).get();
                 RiskManagement riskManagement = riskManagementRepo.findByTradingPlanIdAndRiskCount(tradingPlan.getPlanId(), count).get();
-                RiskAnalysisResponse response = responseRepo.findByTradeId(tradeId).get();
                 TradeRequest tradeRequest = tradeRequestRepo.findByEntryPrice(request.getEntryPrice()).get();
-                psychEvalService.evaluateWhileInTrade(response, tradeRequest, request, trades, riskManagement);
+                psychEvalService.evaluateWhileInTrade(tradeRequest, request, trades, riskManagement);
 
                 holder.setPreviousStopLossLevel(request.getStopLossPrice());
                 holder.setPreviousTakeProfitLevel(request.getTakeProfitPrice());
@@ -63,8 +62,8 @@ public class DerivService {
                 holderRepo.save(holder);
             }
         }else{
-            TradeChanges trade = psychEvalService.updateTradeRecordAfterTradeIsClosed(request, trades);
-            tradingJournalService.updateRecordAfterClosedTrade(request, trades);
+            TradeChanges tradeChange = psychEvalService.updateTradeRecordAfterTradeIsClosed(request, trades);
+            tradingJournalService.updateRecordAfterClosedTrade(request, trades, tradeChange);
         }
     }
 

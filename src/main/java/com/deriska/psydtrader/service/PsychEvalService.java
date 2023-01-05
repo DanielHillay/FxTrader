@@ -3,13 +3,13 @@ package com.deriska.psydtrader.service;
 import com.deriska.psydtrader.entity.*;
 import com.deriska.psydtrader.entity.Pojo.RunningTradeRequest;
 import com.deriska.psydtrader.repository.*;
+import io.jsonwebtoken.lang.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -17,12 +17,10 @@ public class PsychEvalService {
 
     @Autowired
     private TradeJournalRepo journalRepo;
-
     @Autowired
     private TradingPlanRepo tradingPlanRepo;
     @Autowired
     private AccountRepository accountRepo;
-
     @Autowired
     private RiskManagementRepo riskManagementRepo;
     @Autowired
@@ -62,9 +60,9 @@ public class PsychEvalService {
             if (response.getPercentageLoss() <= 2) {
                 score = score + 10;
             }
-            if (Objects.nonNull(trade.getRequestAnalysis())) {
-                score = score + 5;
-            }
+//            if (Objects.nonNull(trade.getRequestAnalysis())) {
+//                score = score + 5;
+//            }
 
             return score;
         }else {
@@ -104,7 +102,7 @@ public class PsychEvalService {
     //Method to check the current state of opened trades or contracts and update the trade score as follows
     //The method accepts a trade status check parameter from deriv and engages in some checks and the
     // initial tradeRequest and RiskAnalysisResponse.
-    public double evaluateWhileInTrade(RiskAnalysisResponse response, TradeRequest initRequest, RunningTradeRequest derivRequest, Trades trades, RiskManagement riskManagement){
+    public double evaluateWhileInTrade(TradeRequest initRequest, RunningTradeRequest derivRequest, Trades trades, RiskManagement riskManagement){
         double score = trades.getTradeScore();
         TradingPlan tradingPlan = tradingPlanRepo.findByTradeId(trades.getId()).get();
 //        RiskManagement riskManagement = riskManagementRepo.findByTradingPlanId(tradingPlan.getPlanId()).get();
@@ -112,7 +110,7 @@ public class PsychEvalService {
         TradeChanges tradeChanges = changes.get(0);
         int changeCount = tradeChanges.getChangeNumber();
         TradeChanges change = new TradeChanges();
-        String contractType = response.getTradeType();
+        String contractType = initRequest.getTradeType();
         if(contractType.equalsIgnoreCase("SELL")){
             if(!(derivRequest.getStopLossPrice() == tradeChanges.getStopLossChange())){
                 change.setChangeNumber(++changeCount);
@@ -262,7 +260,7 @@ public class PsychEvalService {
         return lossLevel;
     }
 
-    private double calculateStopLossProfitPercentage(Trades trades, double currentSlPrice) {
+    private double  calculateStopLossProfitPercentage(Trades trades, double currentSlPrice) {
         double profitPercent = 0;
         double sLprofit = Math.abs(currentSlPrice - trades.getEntryPrice())/trades.getPipsProfit();
         profitPercent = sLprofit * 100;
@@ -291,11 +289,31 @@ public class PsychEvalService {
             tradeChanges = changes.get(0);
         }
         RiskManagement riskManagement = riskManagementRepo.findByTradingPlanId(tradingPlan.getPlanId()).get();
-        ExitStrategy exitStrategy = exitStrategyRepo.findByTradingPlanIdAndCount(tradingPlan.getPlanId(), count).get();
+//        ExitStrategy exitStrategy = exitStrategyRepo.findByTradingPlanIdAndCount(tradingPlan.getPlanId(), count).get();
 
+        List<ExitStrategy> exitStrategies = exitStrategyRepo.findByTradingPlanId(tradingPlan.getPlanId());
         TradeChanges endTradeCondition = new TradeChanges(tradeChanges);
+        if(request.isEndedInProfit()){
+            if(request.getExitPrice() != trades.getTakeProfit()){
+                endTradeCondition.setTradeScore(endTradeCondition.getTradeScore() - 5);
+            }
+            for(ExitStrategy ex : exitStrategies) {
+                double sLpercent = ex.getStopLossPercentAfterTradeInProfit();
+                if (!ObjectUtils.isEmpty(sLpercent)) {
+                    double profitPercentage = calculateStopLossProfitPercentage(trades, request.getExitPrice());
+                   if (profitPercentage == sLpercent){
+                       endTradeCondition.setTradeScore(endTradeCondition.getTradeScore() - 3);
+                   }
+                }
+            }
+        }else{
+            if(request.getExitPrice() != trades.getStopLoss()){
+                endTradeCondition.setTradeScore(endTradeCondition.getTradeScore() - 5);
+            }
+        }
 
         endTradeCondition.setActive(false);
         return endTradeCondition;
     }
+    
 }

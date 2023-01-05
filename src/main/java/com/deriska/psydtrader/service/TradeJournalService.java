@@ -60,13 +60,14 @@ public class TradeJournalService {
         return null;
     }
 
-    public void updateRecordAfterClosedTrade(RunningTradeRequest request, Trades trades) {
+    public void updateRecordAfterClosedTrade(RunningTradeRequest request, Trades trades, TradeChanges tradeChanges) {
         try {
             trades.setExitDate(request.getExitDate());
 //            trades.setExitDate(LocalDateTime.now());
-            trades.setProfit(request.isInProfit());
+            trades.setProfit(request.isEndedInProfit());
             Account account = derivService.getAccountStatus(trades.getAccountId());
             trades.setClosingBalance(account.getAccountBalance());
+            trades.setTradeScore(tradeChanges.getTradeScore());
 
             journalRepo.save(trades);
         } catch (Exception e) {

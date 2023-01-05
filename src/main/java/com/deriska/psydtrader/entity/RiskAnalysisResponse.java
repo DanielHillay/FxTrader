@@ -18,6 +18,9 @@ public class RiskAnalysisResponse {
     private Long responseId;
     private double riskRewardRatio;
     private Long tradeId;
+    private double entryPrice;
+    private double stopLossPrice;
+    private double takeProfitPrice;
     private double stopLossPips;
     private double takeProfitPips;
     private double profitAmount;
