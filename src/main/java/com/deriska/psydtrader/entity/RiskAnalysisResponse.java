@@ -23,6 +23,7 @@ public class RiskAnalysisResponse {
     private double takeProfitPrice;
     private double stopLossPips;
     private double takeProfitPips;
+    private double recommendedLotSize;
     private double profitAmount;
     private double lossAmount;
     private String remarks;

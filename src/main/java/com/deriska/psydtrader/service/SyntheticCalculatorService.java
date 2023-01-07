@@ -31,15 +31,16 @@ public class SyntheticCalculatorService {
 //        Trades tradeJournal = journalRepo.findByTradeRequestId(trade.getRequestId()).get();
         String currency = trade.getCurrency();
         if(trade.getAsset().startsWith(STEP)) {
-            response.setLossAmount(calculateStepLossAmount(trade.getLotSize(), trade.getStopLossPrice(), trade.getEntryPrice()));
-            response.setProfitAmount(calculateStepProfitAmount(trade.getLotSize(), trade.getTakeProfitPrice(), trade.getEntryPrice()));
             if(trade.isCalculateForMe()){
                 response.setStopLossPrice(calculateStepStopLossPriceFromRiskPercent(trade));
                 response.setTakeProfitPrice(calculateStepTakeProfitPriceFromRiskPercent(trade));
+
             }else{
                 response.setTakeProfitPrice(trade.getTakeProfitPrice());
                 response.setStopLossPrice(trade.getStopLossPrice());
             }
+            response.setLossAmount(calculateStepLossAmount(trade.getLotSize(), trade.getStopLossPrice(), trade.getEntryPrice()));
+            response.setProfitAmount(calculateStepProfitAmount(trade.getLotSize(), trade.getTakeProfitPrice(), trade.getEntryPrice()));
         }else{
             if(trade.isCalculateForMe()){
                 response.setStopLossPrice(calculateStopLossPriceFromRiskPercent(trade));
@@ -48,17 +49,18 @@ public class SyntheticCalculatorService {
                 response.setTakeProfitPrice(trade.getTakeProfitPrice());
                 response.setStopLossPrice(trade.getStopLossPrice());
             }
-            response.setLossAmount(calculateLossAmount(trade.getLotSize(), trade.getStopLossPrice(), trade.getEntryPrice()));
-            response.setProfitAmount(calculateProfitAmount(trade.getLotSize(),trade.getTakeProfitPrice(),trade.getEntryPrice()));
+            response.setLossAmount(calculateLossAmount(trade.getLotSize(), response.getStopLossPrice(), trade.getEntryPrice()));
+            response.setProfitAmount(calculateProfitAmount(trade.getLotSize(), response.getTakeProfitPrice(),trade.getEntryPrice()));
         }
 
+        response.setStopLossPips(calculateStopLossPips(response.getStopLossPrice(), trade.getEntryPrice()));
+        response.setTakeProfitPips(calculateTakeProfitPips(response.getTakeProfitPrice(), trade.getEntryPrice()));
         response.setPercentageLoss(calculatePercentageLoss(trade.getAccountBalance(), response.getLossAmount()));
         response.setPercentageProfit(calculatePercentageProfit(trade.getAccountBalance(), response.getProfitAmount()));
-        response.setStopLossPips(calculateStopLossPips(trade.getStopLossPrice(), trade.getEntryPrice()));
-        response.setTakeProfitPips(calculateTakeProfitPips( trade.getTakeProfitPrice(), trade.getEntryPrice()));
+        response.setEntryPrice(trade.getEntryPrice());;
         response.setRiskRewardRatio(calculateRiskRewardRatio(response.getProfitAmount(), response.getLossAmount()));
         response.setTradeType(trade.getTradeType());
-
+        response.setRecommendedLotSize(calculateRecommendedLotSize(response.getLossAmount(), trade.getEntryPrice(), trade.getStopLossPrice()));
 
         response.setPsychEvalScore(psychEvalService.initialTradeEvaluation(response, trade));
 //        currencySetter(response, trade.getExchangeRate(), currency);
@@ -74,8 +76,8 @@ public class SyntheticCalculatorService {
         }else{
             stopLossPrice = trade.getEntryPrice() - result;
         }
-
-        return stopLossPrice;
+        //approx to the symbols pips value OR decimal place
+        return Double.valueOf(df.format(stopLossPrice));
     }
     private double calculateStepTakeProfitPriceFromRiskPercent(TradeRequest trade) {
         double takeProfitPrice = 0;
@@ -83,7 +85,7 @@ public class SyntheticCalculatorService {
         if(trade.getTradeType().equalsIgnoreCase("SELL")){
             takeProfitPrice = trade.getEntryPrice() - result;
         }else{
-            takeProfitPrice = trade.getEntryPrice() +  result;
+            takeProfitPrice = trade.getEntryPrice() + result;
         }
 
         return takeProfitPrice;
@@ -97,7 +99,7 @@ public class SyntheticCalculatorService {
             stopLossPrice = trade.getEntryPrice() - result;
         }
 
-        return stopLossPrice;
+        return Double.valueOf(df.format(stopLossPrice));
     }
     private double calculateTakeProfitPriceFromRiskPercent(TradeRequest trade) {
         double takeProfitPrice = 0;
@@ -108,7 +110,7 @@ public class SyntheticCalculatorService {
             takeProfitPrice = trade.getEntryPrice() + result;
         }
 
-        return takeProfitPrice;
+        return Double.valueOf(df.format(takeProfitPrice));
     }
 
     private Trades updateTradeJournalWithResponse(RiskAnalysisResponse response, Trades trades) {
@@ -131,13 +133,15 @@ public class SyntheticCalculatorService {
 
 
     private double calculateTakeProfitPips( double takeProfitPrice, double entryPrice) {
+        //based on the symbols pips decimal
         double result = Math.abs(entryPrice - takeProfitPrice);
-        return result;
+        return Double.valueOf(df.format(result));
     }
 
     private double calculateStopLossPips( double stopLossPrice, double entryPrice) {
+        //Based on the symbols pips decimal
         double result = Math.abs(entryPrice - stopLossPrice);
-        return result;
+        return Double.valueOf(df.format(result));
     }
 
 
@@ -156,24 +160,29 @@ public class SyntheticCalculatorService {
 
 
     private double calculateLossAmount(double lotSize, double stopLossPrice, double entryPrice) {
-        double result = Math.abs(entryPrice - stopLossPrice)*lotSize;
-        return result;
+        double result = (entryPrice - stopLossPrice)*lotSize;
+        return Double.valueOf(df.format(result));
     }
 
     private double calculateProfitAmount(double lotSize, double takeProfitPrice, double entryPrice){
-        double result = Math.abs(entryPrice - takeProfitPrice)*lotSize;
-        return result;
+        double result = (entryPrice - takeProfitPrice)*lotSize;
+        return Double.valueOf(df.format(result));
     }
 
     private double calculateStepLossAmount(double lotSize, double stopLossPrice, double entryPrice){
-        double result = Math.abs(entryPrice - stopLossPrice)*lotSize;
+        double result = (entryPrice - stopLossPrice)*lotSize;
         double stepResult = result * stepContractSize;
-        return stepResult;
+        return Double.valueOf(df.format(stepResult));
     }
 
     private double calculateStepProfitAmount(double lotSize, double takeProfitPrice, double entryPrice) {
-        double result = Math.abs(entryPrice - takeProfitPrice)*lotSize;
+        double result = (entryPrice - takeProfitPrice)*lotSize;
         double stepResult = result * stepContractSize;
-        return stepResult;
+        return Double.valueOf(df.format(stepResult));
+    }
+
+    private double calculateRecommendedLotSize(double lossAmount, double entryPrice, double stopLossPrice){
+        double lotSize = lossAmount/(Math.abs(stopLossPrice - entryPrice));
+        return Double.valueOf(df.format(lotSize));
     }
 }

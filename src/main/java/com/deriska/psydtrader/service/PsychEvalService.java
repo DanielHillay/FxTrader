@@ -48,10 +48,10 @@ public class PsychEvalService {
         double check = 0;
 
         if(trade.getTradingPlanName().isEmpty()){
-            if ((check != trade.getStopLossPrice())) {
+            if ((check != response.getStopLossPrice())) {
                 score = score + 10;
             }
-            if ((check != trade.getTakeProfitPrice())) {
+            if ((check != response.getTakeProfitPrice())) {
                 score = score + 10;
             }
             if (response.getRiskRewardRatio() >= 2) {
