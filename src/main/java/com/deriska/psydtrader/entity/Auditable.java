@@ -36,7 +36,7 @@ public abstract class Auditable<U> implements Serializable {
     protected Instant lastModifiedDate;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(nullable = true)
     protected Instant deletedAt;
 
     @CreatedBy

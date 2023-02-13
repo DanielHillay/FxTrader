@@ -15,7 +15,7 @@ import java.util.List;
 public class Trades extends Auditable<String>{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String asset;
     private double entryPrice;
@@ -39,7 +39,6 @@ public class Trades extends Auditable<String>{
     private String currency;
     private String tradeDuration;
     private String tradeRemarks;
-    private Long strategyId;
     private Long planId;
     private boolean wasChanged;
     private double openingBalance;
@@ -66,7 +65,7 @@ public class Trades extends Auditable<String>{
     public Trades(Long id, String asset, String assetCategory, double entryPrice, String tradeType, Long tradeRequestId, double stopLoss, double takeProfit,
                   double lotSize, double pipsProfit, double pipsLoss, double riskRewardRatio, double percentageProfit, double amountProfit,
                   double amountLoss, double percentageLoss, String profitability, Long accountId, double accountChange, boolean wasChanged, double tradeScore,
-                  String tradeDuration, String tradeRemarks, Long strategyId, Long planId, double openingBalance, double closingBalance,
+                  String tradeDuration, String tradeRemarks, Long planId, double openingBalance, double closingBalance,
                   boolean status, LocalDateTime entryDate,String currency, LocalDateTime exitDate, boolean isProfit, List<Analysis> listOfAnalysis) {
         this.id = id;
         this.asset = asset;
@@ -92,7 +91,6 @@ public class Trades extends Auditable<String>{
         this.tradeScore = tradeScore;
         this.tradeDuration = tradeDuration;
         this.tradeRemarks = tradeRemarks;
-        this.strategyId = strategyId;
         this.planId = planId;
         this.isProfit = isProfit;
         this.openingBalance = openingBalance;

@@ -33,4 +33,8 @@ public class WSClient  {
             // receive ticks
         }
     }
+
+    public void closeConnection(Session session) throws IOException {
+        session.close();
+    }
 }

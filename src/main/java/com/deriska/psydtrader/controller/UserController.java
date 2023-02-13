@@ -21,10 +21,10 @@ public class UserController {
     @Autowired
     private CalculationService calculationService;
 
-//    @PostConstruct
-//    public void initRoleAndUser() {
-//        userService.initRoleAndUser();
-//    }
+    @PostConstruct
+    public void initRoleAndUser() {
+        userService.initRoleAndUser();
+    }
 
 //    @PostConstruct
 //    public void getWatchedPrices(){

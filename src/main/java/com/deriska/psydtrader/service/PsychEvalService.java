@@ -128,14 +128,14 @@ public class PsychEvalService {
                     if((derivRequest.getStopLossPrice() < initRequest.getStopLossPrice()
                             && derivRequest.getStopLossPrice() > initRequest.getEntryPrice())
                             && !(profitLevelPercent >= riskManagement.getInTradeProfitLevel())
-                            && !(stopLossLevelAfterTradeInProfit >= riskManagement.getStopLossPercentAfterTradeInProfit())){
+                            && (stopLossLevelAfterTradeInProfit != riskManagement.getStopLossPercentAfterTradeInProfit())){
                         score = score - 4;
                         change.setPositiveToTrade(false);
                         change.setRiskRewardRatio(calculateCurrentRiskToRewardRatio(derivRequest, initRequest.getEntryPrice()));
                     }
                     if((derivRequest.getStopLossPrice() < initRequest.getEntryPrice())
                             && !(profitLevelPercent >= riskManagement.getInTradeProfitLevel())
-                            && !(stopLossProfitPercent >= riskManagement.getSlAfterProfitPercent())){
+                            && (stopLossProfitPercent != riskManagement.getSlAfterProfitPercent())){
                         score = score - 4;
                         change.setPositiveToTrade(false);
                     }
@@ -311,7 +311,6 @@ public class PsychEvalService {
                 endTradeCondition.setTradeScore(endTradeCondition.getTradeScore() - 5);
             }
         }
-
         endTradeCondition.setActive(false);
         return endTradeCondition;
     }

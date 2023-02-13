@@ -1,8 +1,7 @@
 package com.deriska.psydtrader.service;
 
-import com.deriska.psydtrader.entity.RiskAnalysisResponse;
-import com.deriska.psydtrader.entity.TradeRequest;
-import com.deriska.psydtrader.entity.Trades;
+import com.deriska.psydtrader.entity.*;
+import com.deriska.psydtrader.repository.TradeHolderRepo;
 import com.deriska.psydtrader.repository.TradeJournalRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,9 @@ public class SyntheticCalculatorService {
     private static final String STEP = "STEP";
 
     @Autowired
+    private TradeHolderRepo holderRepo;
+
+    @Autowired
     private PsychEvalService psychEvalService;
     @Autowired
     private TradeJournalRepo journalRepo;
@@ -27,6 +29,12 @@ public class SyntheticCalculatorService {
 
     public RiskAnalysisResponse calculateAll(TradeRequest trade) {
 
+        Trades tradeJournal = new Trades(trade);
+
+        TradeHolder tradeHolder = new TradeHolder();
+        TradeChanges tradeChanges = new TradeChanges();
+        tradeChanges.setTradeRequestId(trade.getRequestId());
+        tradeHolder.setTradeId(journalRepo.save(tradeJournal).getId());
         RiskAnalysisResponse response = new RiskAnalysisResponse();
 //        Trades tradeJournal = journalRepo.findByTradeRequestId(trade.getRequestId()).get();
         String currency = trade.getCurrency();
@@ -60,9 +68,12 @@ public class SyntheticCalculatorService {
         response.setEntryPrice(trade.getEntryPrice());;
         response.setRiskRewardRatio(calculateRiskRewardRatio(response.getProfitAmount(), response.getLossAmount()));
         response.setTradeType(trade.getTradeType());
-        response.setRecommendedLotSize(calculateRecommendedLotSize(response.getLossAmount(), trade.getEntryPrice(), trade.getStopLossPrice()));
+        response.setRecommendedLotSize(calculateRecommendedLotSize(response.getLossAmount(), trade.getEntryPrice(), response.getStopLossPrice()));
 
         response.setPsychEvalScore(psychEvalService.initialTradeEvaluation(response, trade));
+        response.setRemarks("To score higher and stand a chance of winning $1000 every month, please sign up with us and register a trading plan");
+        journalRepo.save(tradeJournal);
+        holderRepo.save(tradeHolder);
 //        currencySetter(response, trade.getExchangeRate(), currency);
 //        journalRepo.save(updateTradeJournalWithResponse(response, tradeJournal));
         return response;
@@ -113,8 +124,12 @@ public class SyntheticCalculatorService {
         return Double.valueOf(df.format(takeProfitPrice));
     }
 
-    private Trades updateTradeJournalWithResponse(RiskAnalysisResponse response, Trades trades) {
+    public Trades updateTradeJournalWithResponse(RiskAnalysisResponse response, Trades trades) {
         trades.setTradeScore(response.getPsychEvalScore());
+        trades.setRiskRewardRatio(response.getRiskRewardRatio());
+        trades.setTakeProfit(response.getTakeProfitPrice());
+        trades.setStopLoss(response.getStopLossPrice());
+        trades.setEntryPrice(response.getEntryPrice());
         trades.setAmountLoss(response.getLossAmount());
         trades.setAmountProfit(response.getProfitAmount());
         trades.setPipsLoss(response.getStopLossPips());
@@ -150,7 +165,7 @@ public class SyntheticCalculatorService {
 
     private double calculatePercentageProfit(double accountBalance, double profitAmount) {
         double result = (profitAmount/accountBalance)*100;
-        return result;
+        return Double.valueOf(df.format(result));
     }
 
     private double calculatePercentageLoss(double accountBalance, double lossAmount ) {
@@ -182,7 +197,7 @@ public class SyntheticCalculatorService {
     }
 
     private double calculateRecommendedLotSize(double lossAmount, double entryPrice, double stopLossPrice){
-        double lotSize = lossAmount/(Math.abs(stopLossPrice - entryPrice));
+        double lotSize = Math.abs(lossAmount/(Math.abs(stopLossPrice - entryPrice)));
         return Double.valueOf(df.format(lotSize));
     }
 }

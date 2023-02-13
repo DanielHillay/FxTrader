@@ -1,13 +1,16 @@
 package com.deriska.psydtrader.entity.Pojo;
 
+import com.deriska.psydtrader.entity.TradeRequest;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = false)
 @RequiredArgsConstructor
 @Data
-public class RunningTradeRequest {
+public class RunningTradeRequest extends TradeRequest {
 
     private String requestId;
     private Long accountId;

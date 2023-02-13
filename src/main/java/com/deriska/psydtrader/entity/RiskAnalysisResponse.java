@@ -28,6 +28,7 @@ public class RiskAnalysisResponse {
     private double lossAmount;
     private String remarks;
     private String tradeType;
+    private String tradingPlanName;
     private double psychEvalScore;
     private double percentageLoss;
     private double percentageProfit;

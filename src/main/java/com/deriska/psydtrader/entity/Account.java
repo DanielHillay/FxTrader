@@ -1,5 +1,6 @@
 package com.deriska.psydtrader.entity;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.Entity;
@@ -9,6 +10,7 @@ import javax.persistence.Id;
 
 @Entity
 @RequiredArgsConstructor
+@Data
 public class Account {
 
     @Id
@@ -21,9 +23,7 @@ public class Account {
     private double accountBalance;
     private int numberOfTrades;
     private boolean inUse;
-    private String tradingStrategy;
-    private String tradingPlan;
-
+    private boolean isStrict;
     public Account(Long accountId, String accountName, String currency, double accountBalance,
                    Long userId, int numberOfTrades, boolean inUse) {
         this.accountId = accountId;

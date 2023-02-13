@@ -6,6 +6,7 @@ import com.deriska.psydtrader.repository.*;
 import com.deriska.psydtrader.service.websocket.WSClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.websocket.DeploymentException;
 import java.io.IOException;
@@ -20,6 +21,8 @@ public class DerivService {
     @Autowired
     private PsychEvalService psychEvalService;
     @Autowired
+    private AutoTrader autoTrader;
+    @Autowired
     private TradeRequestRepo tradeRequestRepo;
     @Autowired
     private TradingPlanRepo tradingPlanRepo;
@@ -31,7 +34,8 @@ public class DerivService {
     private RiskAnalysisResponseRepo responseRepo;
     @Autowired
     private ExitStrategyRepo exitStrategyRepo;
-
+    @Autowired
+    private SyntheticCalculatorService syntheticCalculatorService;
     private Long tradeId;
 
     public void createConnectionWithDeriv() throws DeploymentException, IOException, InterruptedException {
@@ -45,21 +49,34 @@ public class DerivService {
         TradeHolder holder = holderRepo.findTopByTradeIdOrderByCreatedDateDesc(tradeId).get();
         int count = 0;
         if(request.isActive()) {
-            if (request.getStopLossPrice() != holder.getPreviousStopLossLevel()
-                    || request.getLotSize() != holder.getPreviousLotSize()
-                    || request.getTakeProfitPrice() != holder.getPreviousTakeProfitLevel()) {
-                count = count + 1;
-                TradingPlan tradingPlan = tradingPlanRepo.findByTradeId(tradeId).get();
-                ExitStrategy exitStrategy = exitStrategyRepo.findByTradingPlanIdAndCount(tradingPlan.getPlanId(), count).get();
-                RiskManagement riskManagement = riskManagementRepo.findByTradingPlanIdAndRiskCount(tradingPlan.getPlanId(), count).get();
-                TradeRequest tradeRequest = tradeRequestRepo.findByEntryPrice(request.getEntryPrice()).get();
-                psychEvalService.evaluateWhileInTrade(tradeRequest, request, trades, riskManagement);
+            if(!ObjectUtils.isEmpty(holder)) {
+                if (request.getStopLossPrice() != holder.getPreviousStopLossLevel()
+                        || request.getLotSize() != holder.getPreviousLotSize()
+                        || request.getTakeProfitPrice() != holder.getPreviousTakeProfitLevel()) {
+                    count = count + 1;
+                    TradingPlan tradingPlan = tradingPlanRepo.findByTradeId(tradeId).get();
+                    ExitStrategy exitStrategy = exitStrategyRepo.findByTradingPlanIdAndCount(tradingPlan.getPlanId(), count).get();
+                    RiskManagement riskManagement = riskManagementRepo.findByTradingPlanIdAndRiskCount(tradingPlan.getPlanId(), count).get();
+                    TradeRequest tradeRequest = tradeRequestRepo.findByEntryPrice(request.getEntryPrice()).get();
+                    psychEvalService.evaluateWhileInTrade(tradeRequest, request, trades, riskManagement);
 
-                holder.setPreviousStopLossLevel(request.getStopLossPrice());
-                holder.setPreviousTakeProfitLevel(request.getTakeProfitPrice());
-                holder.setPreviousLotSize(request.getLotSize());
+                    holder.setPreviousStopLossLevel(request.getStopLossPrice());
+                    holder.setPreviousTakeProfitLevel(request.getTakeProfitPrice());
+                    holder.setPreviousLotSize(request.getLotSize());
 
-                holderRepo.save(holder);
+                    holderRepo.save(holder);
+                }
+            }else{
+                if(responseRepo.findByTradeId(tradeId).isEmpty()){
+                    if(getAccountStatus(1L).isStrict()){
+                        if(syntheticCalculatorService.calculateAll(request).getPsychEvalScore() < 50){
+                            autoTrader.closeTrade(request);
+                        }
+                    }else{
+                        syntheticCalculatorService.calculateAll(request);
+                    }
+                }
+
             }
         }else{
             TradeChanges tradeChange = psychEvalService.updateTradeRecordAfterTradeIsClosed(request, trades);
