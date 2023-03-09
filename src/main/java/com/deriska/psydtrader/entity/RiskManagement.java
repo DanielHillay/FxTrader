@@ -20,7 +20,11 @@ public class RiskManagement {
     private int riskCount;
     private Long tradingPlanId;
     private Long tradeId;
+    private double accountNumber;
+    private Long accountId;
+    private String userId;
     private double riskRewardRatio;
+    private double minAcceptedScore;
     private double lotSizePercentWhenTradeInLoss;
     private double lotSizePercentWhenTradeInProfit;
     private double allowedLossLevelPercentage;

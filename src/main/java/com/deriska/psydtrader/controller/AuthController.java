@@ -1,6 +1,6 @@
 package com.deriska.psydtrader.controller;
 
-import com.deriska.psydtrader.entity.LoginRequest;
+import com.deriska.psydtrader.entity.Pojo.LoginRequest;
 import com.deriska.psydtrader.entity.StandardResponse;
 import com.deriska.psydtrader.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -48,7 +48,6 @@ public class AutoTrader {
                 return StandardResponse.sendHttpResponse(true, "Could not open trade because You have betrayed your trading plan");
             } else {
                 // call the metatrader API to open the trade
-                journalRepo.save(tradeJournal);
                 holderRepo.save(tradeHolder);
                 return StandardResponse.sendHttpResponse(true, "Successfully entered trade");
             }

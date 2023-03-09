@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 public class RunningTradeRequest extends TradeRequest {
 
-    private String requestId;
+    private String reqId;
     private Long accountId;
     private double stopLossPrice;
     private double entryPrice;

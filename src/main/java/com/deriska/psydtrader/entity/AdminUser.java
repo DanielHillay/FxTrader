@@ -3,12 +3,11 @@ package com.deriska.psydtrader.entity;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.Set;
 
 @Entity
 @Data
-public class User {
+public class AdminUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,16 +21,14 @@ public class User {
     private String phoneNumber;
 
     private String tag;
-    private String verificationOtp;
-    private String oneTimePassword;
-    private Date otpRequestTime;
-    private boolean isValidated;
+    private boolean useAD;
+    private String staffID;
     private String lastName;
     private String password;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinTable(name = "USER_ROLE",
+    @JoinTable(name = "ADMIN_ROLE",
             joinColumns = {
-                    @JoinColumn(name = "USER_ID")
+                    @JoinColumn(name = "ADMIN_ID")
             },
             inverseJoinColumns = {
                     @JoinColumn(name = "ROLE_ID")
@@ -62,6 +59,7 @@ public class User {
     public void setUserName(String userName) {
         this.userName = userName;
     }
+
     public Set<Role> getRole() {
         return role;
     }

@@ -1,4 +1,4 @@
-package com.deriska.psydtrader.entity;
+package com.deriska.psydtrader.entity.Pojo;
 
 public class LoginRequest {
 

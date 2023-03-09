@@ -1,4 +1,6 @@
-package com.deriska.psydtrader.entity;
+package com.deriska.psydtrader.entity.Pojo;
+
+import com.deriska.psydtrader.entity.User;
 
 public class LoginResponse {
 

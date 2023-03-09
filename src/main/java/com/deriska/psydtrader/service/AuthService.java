@@ -1,7 +1,7 @@
 package com.deriska.psydtrader.service;
 
-import com.deriska.psydtrader.entity.LoginRequest;
-import com.deriska.psydtrader.entity.LoginResponse;
+import com.deriska.psydtrader.entity.Pojo.LoginRequest;
+import com.deriska.psydtrader.entity.Pojo.LoginResponse;
 import com.deriska.psydtrader.repository.UserRepository;
 import com.deriska.psydtrader.util.JwtUtil;
 import com.deriska.psydtrader.entity.User;
@@ -50,7 +50,7 @@ public class AuthService implements UserDetailsService {
         if (user != null) {
             return new org.springframework.security.core.userdetails.User(
                     user.getUserName(),
-                    user.getUserPassword(),
+                    user.getPassword(),
                     getAuthority(user)
             );
         } else {

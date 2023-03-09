@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Repository
 public interface RiskManagementRepo extends JpaRepository<RiskManagement, Long> {
@@ -15,4 +16,6 @@ public interface RiskManagementRepo extends JpaRepository<RiskManagement, Long> 
 
 
     Optional<RiskManagement> findByTradingPlanIdAndRiskCount(Long planId, int count);
+
+    Optional<RiskManagement> findByAccountId(Long accountId);
 }
